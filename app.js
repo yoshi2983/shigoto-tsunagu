@@ -180,7 +180,7 @@ function gate(container) {
 function render() {
   document.querySelectorAll("[data-demo]").forEach(n => n.hidden = !state.demo);
   document.querySelectorAll(".demo-toggle").forEach(n => n.checked = state.demo);
-  document.querySelectorAll("[data-auth]").forEach(n => n.replaceChildren(...authBar()));
+  document.querySelectorAll("[data-auth]").forEach(n => n.replaceChildren(...authBar().filter(Boolean)));
   const d = data();
   const can = state.demo || state.admin;
 
