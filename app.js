@@ -144,7 +144,9 @@ function tile(label, value, sub, ratio) {
 }
 function authBar() {
   const b = state.backend;
-  if (!b || b.mode === "local") return [el("span", { text: "お試しモード：この端末に保存されたデータを表示しています。" })];
+  if (!b) return [];
+  if (b.mode === "local") return [el("span", { text: "お試しモード：この端末に保存されたデータを表示しています。" })];
+  if (b.mode === "error") return [el("span", { text: "サーバーに接続できません。ページを再読み込みしてください。" })];
   if (!state.user) return [el("span", { text: "委員会の担当者だけが見られます。" }), el("button", { class: "btn small", type: "button", onclick: doSignIn }, "Googleでログイン")];
   return [el("span", { text: state.user.email + (state.admin ? "（委員会）" : "（閲覧権限なし）") }), el("button", { class: "btn small ghost", type: "button", onclick: () => b.signOut() }, "ログアウト")];
 }
@@ -318,10 +320,13 @@ render();
   try {
     state.backend = firebaseConfig ? await firebaseBackend(firebaseConfig) : localBackend();
   } catch (e) {
-    console.warn("Firebase に接続できませんでした。お試しモードで動きます。", e);
-    state.backend = localBackend();
+    // 設定済みなのにつながらない時は、端末に保存して「送信しました」と見せない（届いたと誤解させない）。
+    console.warn("Firebase に接続できませんでした。", e);
+    const fail = async () => { throw new Error("offline"); };
+    state.backend = { mode: "error", submit: fail, signIn: fail, signOut: fail, onAuth(cb) { cb(null, false); }, watch() {}, addPair: fail, updatePair: fail, deletePair: fail };
+    $("#setup-banner").firstElementChild.textContent = "サーバーに接続できません。通信状態を確認して、ページを再読み込みしてください。";
   }
-  $("#setup-banner").hidden = state.backend.mode !== "local";
+  $("#setup-banner").hidden = state.backend.mode === "firebase";
   state.backend.onAuth((user, admin) => {
     state.user = user; state.admin = admin;
     if (admin) state.backend.watch(d => { state.live = d; state.loaded = true; render(); });
