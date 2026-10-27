@@ -1,5 +1,5 @@
 // 画面のファイルだけをキャッシュする。登録データ（Firebase）はキャッシュしない。
-const CACHE = "shigoto-v4";
+const CACHE = "shigoto-v5";
 const SHELL = ["./", "index.html", "style.css", "app.js", "config.js", "privacy.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -13,7 +13,8 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request).then(res => {
+    // cache:"no-cache"：ブラウザに残った古いファイルを使わず、毎回サーバーに新しい版があるか確かめる
+    fetch(e.request, { cache: "no-cache" }).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(e.request, copy));
       return res;

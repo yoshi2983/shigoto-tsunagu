@@ -328,7 +328,13 @@ $("#install-btn").addEventListener("click", async () => {
   deferred.prompt(); await deferred.userChoice; deferred = null;
   $("#install-box").hidden = true;
 });
-if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+if ("serviceWorker" in navigator) {
+  // 新しい版が入ったら1回だけ再読み込みして、古い画面が残らないようにする（初回のインストール時は除く）
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadController && !reloaded) { reloaded = true; location.reload(); } });
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).catch(() => {}));
+}
 
 // ---------------------------------------------------------------- start
 render();
