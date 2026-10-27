@@ -67,8 +67,8 @@ async function firebaseBackend(cfg) {
     },
     async signIn() {
       const provider = new au.GoogleAuthProvider();
-      try { await au.signInWithPopup(auth, provider); }
-      catch (e) { if (e && e.code === "auth/popup-blocked") await au.signInWithRedirect(auth, provider); else throw e; }
+      // リダイレクト方式は iPhone の Safari で戻ってこられないため、ポップアップ方式だけを使う
+      await au.signInWithPopup(auth, provider);
     },
     async signOut() { unsubs.forEach(u => u()); unsubs = []; await au.signOut(auth); },
     watch(cb) {
@@ -147,11 +147,27 @@ function authBar() {
   if (!b) return [];
   if (b.mode === "local") return [el("span", { text: "お試しモード：この端末に保存されたデータを表示しています。" })];
   if (b.mode === "error") return [el("span", { text: "サーバーに接続できません。ページを再読み込みしてください。" })];
-  if (!state.user) return [el("span", { text: "委員会の担当者だけが見られます。" }), el("button", { class: "btn small", type: "button", onclick: doSignIn }, "Googleでログイン")];
+  if (!state.user) {
+    // iPhone のホーム画面アプリ（standalone）では、Google のログイン画面から戻ってこられない
+    if (isIOS && standalone) return [el("span", { text: "iPhoneのホーム画面アプリからはログインできません。Safariでこのページを開いてログインしてください。" })];
+    return [el("span", { text: "委員会の担当者だけが見られます。" }), el("button", { class: "btn small", type: "button", onclick: doSignIn }, "Googleでログイン"),
+      state.authError ? el("span", { class: "msg err", text: state.authError }) : null];
+  }
   return [el("span", { text: state.user.email + (state.admin ? "（委員会）" : "（閲覧権限なし）") }), el("button", { class: "btn small ghost", type: "button", onclick: () => b.signOut() }, "ログアウト")];
 }
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 async function doSignIn() {
-  try { await state.backend.signIn(); } catch (e) { console.warn(e); }
+  state.authError = "";
+  try { await state.backend.signIn(); }
+  catch (e) {
+    console.warn(e);
+    const code = (e && e.code) || "";
+    if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") state.authError = "ログイン画面が閉じられました。もう一度お試しください。";
+    else if (code === "auth/popup-blocked") state.authError = "ポップアップがブロックされました。ブラウザの設定でポップアップを許可してから、もう一度お試しください。";
+    else if (code === "auth/unauthorized-domain") state.authError = "このアドレスからのログインが許可されていません（Firebase の承認済みドメインを確認してください）。";
+    else state.authError = "ログインできませんでした（" + (code || "不明なエラー") + "）。";
+    render();
+  }
 }
 function gate(container) {
   if (state.demo || state.admin) return false;
