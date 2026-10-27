@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>しごと、つなぐ。名古屋</title>
+<meta name="description" content="名古屋の企業と就労支援事業所を、名古屋青年会議所 多彩な人財活躍委員会がおつなぎします。業務の相談・事業所登録は無料です。">
+<meta name="theme-color" content="#1b2140">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="しごとつなぐ">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#home">しごと、つなぐ。名古屋<small>企業 × 就労支援事業所</small></a>
+    <nav class="tabs" aria-label="ページ">
+      <a href="#home">はじめに</a>
+      <a href="#kigyou">企業の方</a>
+      <a href="#jigyosho">事業所の方</a>
+      <span class="sep" aria-hidden="true"></span>
+      <a href="#match">マッチング</a>
+      <a href="#bansou">伴走記録</a>
+    </nav>
+  </div>
+  <div class="iro" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="banner" id="setup-banner" hidden><div class="wrap">準備中のため、送信内容はこの端末にだけ保存されます（データベース未設定）。</div></div>
+</header>
+
+<main class="wrap">
+
+<section class="view" id="v-home">
+  <div class="hero">
+    <p class="eyebrow">イロトリドリ ─ 多彩な人財と企業がともに生み出す、活躍と新たな価値</p>
+    <h1><span>その作業、</span><span>切り出せば、</span><span>誰かの得意になる。</span></h1>
+    <p class="lead">名古屋の企業と就労支援事業所を、名古屋青年会議所 多彩な人財活躍委員会がおつなぎします。業務の相談から職場見学、トライアルまで、委員会が伴走します。ご相談・ご登録は無料です。</p>
+  </div>
+  <div class="cta">
+    <a class="primary" href="#kigyou"><b>企業の方</b><span>業務を相談する・セミナーに申し込む</span></a>
+    <a href="#jigyosho"><b>就労支援事業所の方</b><span>事業所として登録する</span></a>
+  </div>
+  <div class="fact">
+    <div class="num">2.7<small>%</small></div>
+    <p>2026年7月から、民間企業の障害者の法定雇用率は2.7%になり、対象は従業員37.5人以上の企業に広がりました。「何から始めればいいか分からない」という企業の相談窓口になります。</p>
+  </div>
+  <div class="field">
+    <h2>こんなお仕事を依頼できます</h2>
+    <div class="chips" id="home-chips"></div>
+    <p class="note">※掲載する業務は、参加事業所への聞き取りをもとに確定します。</p>
+  </div>
+  <div class="field">
+    <h2>ご相談からトライアルまで</h2>
+    <ol class="flow">
+      <li><b>企業課題のヒアリング</b><span>困っている業務や、切り出せそうな作業を伺います。</span></li>
+      <li><b>職場見学</b><span>就労支援事業所の担当者と現場を訪れ、作業環境を確認します。</span></li>
+      <li><b>強みを活かせる業務の検討</b><span>本人の強みと希望を踏まえ、仕事の進め方を一緒に考えます。</span></li>
+      <li><b>事業所とのマッチング</b><span>仕事内容・条件・必要な配慮を企業と事業所で調整します。</span></li>
+      <li><b>トライアルとフォロー</b><span>試してから決めます。継続委託や直接雇用の検討につなげます。</span></li>
+    </ol>
+  </div>
+  <div class="fact">
+    <p><b>セミナー（企業向け・全2回）</b><br>第1回 2027年4月17日〔候補日〕 名古屋JC会館「多彩な人財の能力や強みと、雇用・活用に至るプロセスを知る」講師：豊嶋 良幸 氏（ウェルジョブなごや）<br>第2回 2027年5月頃〔調整中〕「現場で見つけた『はたらく』のかたち」<br>各回とも単独で参加できます。企業フォームからお申し込みください。</p>
+  </div>
+  <div class="install" id="install-box" hidden>
+    <p id="install-text">ホーム画面に追加すると、アプリのようにすぐ開けます。</p>
+    <button class="btn small" type="button" id="install-btn" hidden>ホーム画面に追加</button>
+  </div>
+</section>
+
+<section class="view" id="v-kigyou" hidden>
+  <div class="field">
+    <h2>企業の方：業務のご相談・セミナー申込</h2>
+    <p class="lead">依頼したい業務や時期をお送りください。内容に合う就労支援事業所を、委員会からご紹介します。</p>
+  </div>
+  <form id="f-kigyou" novalidate>
+    <div class="row2">
+      <div class="field"><label for="k-name">会社名<span class="req">必須</span></label><input type="text" id="k-name" name="name" required maxlength="100" autocomplete="organization"></div>
+      <div class="field"><label for="k-person">ご担当者名<span class="req">必須</span></label><input type="text" id="k-person" name="person" required maxlength="60" autocomplete="name"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="k-email">メールアドレス<span class="req">必須</span></label><input type="email" id="k-email" name="email" required maxlength="120" autocomplete="email"></div>
+      <div class="field"><label for="k-tel">電話番号</label><input type="tel" id="k-tel" name="tel" maxlength="20" autocomplete="tel"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="k-area">所在地（区）<span class="req">必須</span></label><select id="k-area" name="area" required></select></div>
+      <div class="field"><label for="k-size">従業員数</label><select id="k-size" name="size">
+        <option value="">選択してください</option><option>37.5人未満</option><option>37.5〜100人</option><option>101〜300人</option><option>301人以上</option></select></div>
+    </div>
+    <div class="field"><span class="lbl" id="k-work-l">依頼したい業務<span class="req">1つ以上</span></span><div class="checks" id="k-work" role="group" aria-labelledby="k-work-l"></div></div>
+    <div class="field"><label for="k-detail">業務の内容・量・時期</label><textarea id="k-detail" name="detail" maxlength="1000" placeholder="例：月に2回、商品ラベルの貼り付けと検品。1回あたり500個ほど。2027年6月から。"></textarea></div>
+    <div class="field"><span class="lbl" id="k-form-l">関心のあるかたち</span><div class="checks" id="k-form" role="group" aria-labelledby="k-form-l"></div></div>
+    <div class="field"><span class="lbl" id="k-sem-l">セミナーへの参加</span><div class="checks" id="k-sem" role="group" aria-labelledby="k-sem-l"></div></div>
+    <div class="field"><label for="k-ask">多彩な人財の雇用・活用について、今一番聞きたいこと</label><textarea id="k-ask" name="ask" maxlength="1000" placeholder="講師との事前調整と、当日の質疑に使わせていただきます。"></textarea></div>
+    <div class="hp" aria-hidden="true"><label for="k-website">website</label><input type="text" id="k-website" name="website" tabindex="-1" autocomplete="off"></div>
+    <label class="consent"><input type="checkbox" id="k-consent" name="consent"><span><a href="privacy.html" target="_blank" rel="noopener">個人情報の取り扱い</a>に同意します</span></label>
+    <div class="actions"><button class="btn" type="submit">相談内容を送る</button><span class="hint">送信内容は委員会の担当者だけが確認します。</span></div>
+    <div class="msg" id="k-msg" role="status" hidden></div>
+  </form>
+</section>
+
+<section class="view" id="v-jigyosho" hidden>
+  <div class="field">
+    <h2>就労支援事業所の方：事業所登録</h2>
+    <p class="lead">対応できる作業や受け入れ可能な量をご登録ください。仕事の受注先、実習先、雇用先となる企業とおつなぎします。</p>
+  </div>
+  <form id="f-jigyosho" novalidate>
+    <div class="row2">
+      <div class="field"><label for="j-name">事業所名<span class="req">必須</span></label><input type="text" id="j-name" name="name" required maxlength="100" autocomplete="organization"></div>
+      <div class="field"><label for="j-type">事業所の種別<span class="req">必須</span></label><select id="j-type" name="type" required></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="j-person">ご担当者名<span class="req">必須</span></label><input type="text" id="j-person" name="person" required maxlength="60" autocomplete="name"></div>
+      <div class="field"><label for="j-area">所在地（区）<span class="req">必須</span></label><select id="j-area" name="area" required></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label for="j-email">メールアドレス<span class="req">必須</span></label><input type="email" id="j-email" name="email" required maxlength="120" autocomplete="email"></div>
+      <div class="field"><label for="j-tel">電話番号</label><input type="tel" id="j-tel" name="tel" maxlength="20" autocomplete="tel"></div>
+    </div>
+    <div class="field"><span class="lbl" id="j-work-l">対応できる作業<span class="req">1つ以上</span></span><div class="checks" id="j-work" role="group" aria-labelledby="j-work-l"></div></div>
+    <div class="field"><span class="lbl" id="j-form-l">対応できるかたち</span><div class="checks" id="j-form" role="group" aria-labelledby="j-form-l"></div></div>
+    <div class="row2">
+      <div class="field"><label for="j-cap">受け入れ可能な量・人数</label><input type="text" id="j-cap" name="cap" maxlength="200" placeholder="例：週3日・3名程度、月1,000個まで"></div>
+      <div class="field"><label for="j-move">施設外での作業</label><select id="j-move" name="move"><option value="">選択してください</option><option>企業の事業所でも作業できる</option><option>事業所内での作業のみ</option><option>内容による</option></select></div>
+    </div>
+    <div class="field"><label for="j-strength">事業所の強み・得意な作業</label><textarea id="j-strength" name="strength" maxlength="1000" placeholder="例：細かい検品作業の正確さに定評があります。データ入力はダブルチェック体制です。"></textarea>
+      <p class="hint">利用者お一人おひとりの障がいの内容など、個人の情報は入力しないでください。必要な配慮は、マッチングの段階で委員会と事業所で確認します。</p></div>
+    <div class="hp" aria-hidden="true"><label for="j-website">website</label><input type="text" id="j-website" name="website" tabindex="-1" autocomplete="off"></div>
+    <label class="consent"><input type="checkbox" id="j-consent" name="consent"><span><a href="privacy.html" target="_blank" rel="noopener">個人情報の取り扱い</a>に同意します</span></label>
+    <div class="actions"><button class="btn" type="submit">事業所を登録する</button><span class="hint">登録内容は委員会の担当者だけが確認します。</span></div>
+    <div class="msg" id="j-msg" role="status" hidden></div>
+  </form>
+</section>
+
+<section class="view" id="v-match" hidden>
+  <div class="panel-head">
+    <div class="field"><h2>マッチング<span class="demo-flag" data-demo hidden>例を表示中</span></h2>
+      <p class="meta">委員会用。登録された企業ごとに、作業・かたち・地域が合う事業所を候補として並べます。</p></div>
+    <label class="toggle"><input type="checkbox" class="demo-toggle" id="demo-m"> 例のデータで試す（保存されません）</label>
+  </div>
+  <div class="auth" data-auth></div>
+  <div class="kdi" id="m-counts"></div>
+  <div id="m-list" class="list"></div>
+  <details><summary>候補の点数のつけ方</summary>
+    <p class="meta">依頼したい業務と対応できる作業が1つ重なるごとに25点（最大75点）、関心のあるかたちと対応できるかたちが重なれば15点、同じ区なら10点（名古屋市内どうしなら5点）。点数は目安です。最終的な判断は、ヒアリングと職場見学を経て委員会と事業所で行います。</p>
+  </details>
+</section>
+
+<section class="view" id="v-bansou" hidden>
+  <div class="panel-head">
+    <div class="field"><h2>伴走記録<span class="demo-flag" data-demo hidden>例を表示中</span></h2>
+      <p class="meta">委員会用。伴走ペアの進み具合を5つのステップで記録します（2027年6月〜10月）。</p></div>
+    <label class="toggle"><input type="checkbox" class="demo-toggle" id="demo-b"> 例のデータで試す（保存されません）</label>
+  </div>
+  <div class="auth" data-auth></div>
+  <div class="kdi" id="b-kdi"></div>
+  <div id="b-list" class="cols"></div>
+</section>
+
+</main>
+<footer><div class="wrap">主催：公益社団法人名古屋青年会議所 多彩な人財活躍委員会　／　<a href="privacy.html">個人情報の取り扱い</a></div></footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

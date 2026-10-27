@@ -1,0 +1,63 @@
+rules_version = '2';
+// 誰でも：企業・事業所の登録を「新しく送る」ことだけができる（読む・書き換えるはできない）。
+// 委員会（admins コレクションにメールアドレスがある Google アカウント）：すべて読める・伴走記録を書ける。
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()));
+    }
+    function s(d, k, max, required) {
+      return (k in d) ? (d[k] is string && d[k].size() <= max && (!required || d[k].size() > 0)) : !required;
+    }
+    function l(d, k, max, required) {
+      return (k in d) ? (d[k] is list && d[k].size() <= max && (!required || d[k].size() > 0)) : !required;
+    }
+
+    match /admins/{email} {
+      // 自分が委員会メンバーかどうかの確認だけできる。追加・削除は Firebase コンソールから行う。
+      allow get: if request.auth != null && request.auth.token.email.lower() == email;
+      allow list, write: if false;
+    }
+
+    match /companies/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name','person','email','tel','area','size','work','detail','forms','seminar','ask','createdAt'])
+        && s(request.resource.data, 'name', 100, true)
+        && s(request.resource.data, 'person', 60, true)
+        && s(request.resource.data, 'email', 120, true)
+        && s(request.resource.data, 'tel', 20, false)
+        && s(request.resource.data, 'area', 20, true)
+        && s(request.resource.data, 'size', 20, false)
+        && l(request.resource.data, 'work', 7, true)
+        && s(request.resource.data, 'detail', 1000, false)
+        && l(request.resource.data, 'forms', 3, false)
+        && l(request.resource.data, 'seminar', 3, false)
+        && s(request.resource.data, 'ask', 1000, false)
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /facilities/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['name','type','person','email','tel','area','work','forms','cap','move','strength','createdAt'])
+        && s(request.resource.data, 'name', 100, true)
+        && s(request.resource.data, 'type', 20, true)
+        && s(request.resource.data, 'person', 60, true)
+        && s(request.resource.data, 'email', 120, true)
+        && s(request.resource.data, 'tel', 20, false)
+        && s(request.resource.data, 'area', 20, true)
+        && l(request.resource.data, 'work', 7, true)
+        && l(request.resource.data, 'forms', 3, false)
+        && s(request.resource.data, 'cap', 200, false)
+        && s(request.resource.data, 'move', 30, false)
+        && s(request.resource.data, 'strength', 1000, false)
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /pairs/{id} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
