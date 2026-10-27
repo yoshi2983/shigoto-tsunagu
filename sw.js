@@ -1,5 +1,5 @@
 // 画面のファイルだけをキャッシュする。登録データ（Firebase）はキャッシュしない。
-const CACHE = "shigoto-v5";
+const CACHE = "shigoto-v6";
 const SHELL = ["./", "index.html", "style.css", "app.js", "config.js", "privacy.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", e => {

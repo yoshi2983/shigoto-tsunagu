@@ -27,6 +27,7 @@
       <span class="sep" aria-hidden="true"></span>
       <a href="#match">マッチング</a>
       <a href="#bansou">伴走記録</a>
+      <a href="#ichiran">登録一覧</a>
     </nav>
   </div>
   <div class="iro" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -160,6 +161,20 @@
   <div class="auth" data-auth></div>
   <div class="kdi" id="b-kdi"></div>
   <div id="b-list" class="cols"></div>
+</section>
+
+<section class="view" id="v-ichiran" hidden>
+  <div class="panel-head">
+    <div class="field"><h2>登録一覧<span class="demo-flag" data-demo hidden>例を表示中</span></h2>
+      <p class="meta">委員会用。届いた登録の確認・修正・削除ができます。</p></div>
+    <label class="toggle"><input type="checkbox" class="demo-toggle" id="demo-i"> 例のデータで試す（保存されません）</label>
+  </div>
+  <div class="auth" data-auth></div>
+  <div class="list-tools">
+    <div class="segs" id="i-tabs" role="group" aria-label="表示する一覧"></div>
+    <input type="search" id="i-search" placeholder="名前・担当者・区で探す" aria-label="登録を探す">
+  </div>
+  <div id="i-list" class="rows"></div>
 </section>
 
 </main>

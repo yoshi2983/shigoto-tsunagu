@@ -5,6 +5,23 @@ const FORMS = ["業務委託（作業の依頼）", "職場実習", "直接雇�
 const SEMINAR = ["第1回に参加したい", "第2回に参加したい", "まずは相談だけ"];
 const TYPES = ["就労継続支援A型", "就労継続支援B型", "就労移行支援", "就労定着支援", "その他"];
 const WARDS = ["千種区", "東区", "北区", "西区", "中村区", "中区", "昭和区", "瑞穂区", "熱田区", "中川区", "港区", "南区", "守山区", "緑区", "名東区", "天白区", "名古屋市外"];
+const SIZES = ["37.5人未満", "37.5〜100人", "101〜300人", "301人以上"];
+const MOVES = ["企業の事業所でも作業できる", "事業所内での作業のみ", "内容による"];
+// 登録一覧で編集する項目（申込フォームと同じ並び）
+const FIELDS = {
+  companies: [
+    ["name", "会社名", "text"], ["person", "ご担当者名", "text"], ["email", "メールアドレス", "text"], ["tel", "電話番号", "text"],
+    ["area", "所在地（区）", "select", WARDS], ["size", "従業員数", "select", SIZES], ["work", "依頼したい業務", "checks", WORKS],
+    ["detail", "業務の内容・量・時期", "area"], ["forms", "関心のあるかたち", "checks", FORMS], ["seminar", "セミナーへの参加", "checks", SEMINAR],
+    ["ask", "今一番聞きたいこと", "area"],
+  ],
+  facilities: [
+    ["name", "事業所名", "text"], ["type", "事業所の種別", "select", TYPES], ["person", "ご担当者名", "text"], ["email", "メールアドレス", "text"],
+    ["tel", "電話番号", "text"], ["area", "所在地（区）", "select", WARDS], ["work", "対応できる作業", "checks", WORKS],
+    ["forms", "対応できるかたち", "checks", FORMS], ["cap", "受け入れ可能な量・人数", "text"], ["move", "施設外での作業", "select", MOVES],
+    ["strength", "事業所の強み・得意な作業", "area"],
+  ],
+};
 const STEPS = ["ヒアリング", "職場見学", "業務の検討", "事業所と調整", "トライアル"];
 const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
 
@@ -41,6 +58,8 @@ function localBackend() {
     async addPair(rec) { store.pairs.push({ id: id(), ...rec, createdAt: Date.now() }); save(); },
     async updatePair(pid, patch) { Object.assign(store.pairs.find(p => p.id === pid) || {}, patch); save(); },
     async deletePair(pid) { store.pairs = store.pairs.filter(p => p.id !== pid); save(); },
+    async updateItem(coll, iid, patch) { Object.assign(store[coll].find(x => x.id === iid) || {}, patch); save(); },
+    async deleteItem(coll, iid) { store[coll] = store[coll].filter(x => x.id !== iid); save(); },
   };
 }
 
@@ -82,6 +101,8 @@ async function firebaseBackend(cfg) {
     async addPair(rec) { await fs.addDoc(fs.collection(db, "pairs"), { ...rec, createdAt: fs.serverTimestamp() }); },
     async updatePair(pid, patch) { await fs.updateDoc(fs.doc(db, "pairs", pid), { ...patch, updatedAt: fs.serverTimestamp() }); },
     async deletePair(pid) { await fs.deleteDoc(fs.doc(db, "pairs", pid)); },
+    async updateItem(coll, iid, patch) { await fs.updateDoc(fs.doc(db, coll, iid), patch); },
+    async deleteItem(coll, iid) { await fs.deleteDoc(fs.doc(db, coll, iid)); },
   };
 }
 
@@ -100,7 +121,7 @@ const DEMO = {
     { id: "ex-p1", companyId: "ex-c1", facilityId: "ex-f1", step: 3, contract: false, staff: "例 委員", memo: "職場見学済み。ラベル貼りの手順書を作成中。", createdAt: 1 },
   ],
 };
-const state = { backend: null, user: null, admin: false, demo: false, live: { companies: [], facilities: [], pairs: [] }, loaded: false };
+const state = { backend: null, user: null, admin: false, demo: false, tab: "companies", query: "", edit: null, live: { companies: [], facilities: [], pairs: [] }, loaded: false };
 const clean = list => list.map(x => ({ ...x, work: Array.isArray(x.work) ? x.work : [], forms: Array.isArray(x.forms) ? x.forms : [] }));
 const data = () => state.demo ? DEMO : { companies: clean(state.live.companies), facilities: clean(state.live.facilities), pairs: state.live.pairs };
 
@@ -127,7 +148,7 @@ fillChecks("#j-work", WORKS, "work"); fillChecks("#j-form", FORMS, "forms");
 const fillSelect = (id, list) => $(id).append(el("option", { value: "", text: "選択してください" }), ...list.map(v => el("option", { text: v })));
 fillSelect("#k-area", WARDS); fillSelect("#j-area", WARDS); fillSelect("#j-type", TYPES);
 
-const VIEWS = ["home", "kigyou", "jigyosho", "match", "bansou"];
+const VIEWS = ["home", "kigyou", "jigyosho", "match", "bansou", "ichiran"];
 function route() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home";
   for (const id of VIEWS) $("#v-" + id).hidden = id !== v;
@@ -197,6 +218,8 @@ function render() {
     else ml.replaceChildren(...[...d.companies].sort((a, b) => ms(b.createdAt) - ms(a.createdAt)).map(c => companyCard(c, d)));
   }
 
+  renderIchiran(d, can);
+
   // 伴走記録
   const bl = $("#b-list"), pairs = d.pairs;
   const trial = pairs.filter(p => p.step >= 5).length, contracts = pairs.filter(p => p.contract).length;
@@ -218,6 +241,7 @@ function companyCard(c, d) {
   return el("article", { class: "card" },
     el("div", { class: "card-top" }, el("h3", { text: c.name }), el("span", { class: "meta", text: [c.area, c.size].filter(Boolean).join("・") })),
     el("div", { class: "chips" }, c.work.map(chip)),
+    el("div", { class: "actions" }, el("button", { class: "btn small ghost", type: "button", onclick: () => openEdit("companies", c.id) }, "登録内容を直す")),
     c.detail ? el("p", { class: "meta", text: c.detail }) : null,
     (c.forms.length || (c.seminar || []).length) ? el("p", { class: "meta", text: [...c.forms, ...(c.seminar || [])].join("／") }) : null,
     c.ask ? el("p", { class: "meta", text: "聞きたいこと：" + c.ask }) : null,
@@ -248,6 +272,110 @@ function pairCard(p, d) {
     el("div", { class: "actions" },
       el("label", { class: "toggle" }, el("input", { type: "checkbox", checked: !!p.contract, onchange: e => savePair(p, { contract: e.target.checked }) }), "雇用契約を締結した"),
       el("button", { class: "btn small ghost", type: "button", onclick: e => confirmRemove(e.currentTarget, p) }, "ペアを解除")));
+}
+
+// ---------------------------------------------------------------- 登録一覧（編集・削除）
+const fmtDate = t => { const v = ms(t); if (!v || v < 1e11) return ""; const dt = new Date(v); return (dt.getMonth() + 1) + "/" + dt.getDate() + " 登録"; };
+function openEdit(coll, iid) {
+  state.tab = coll; state.edit = { coll, id: iid, formEl: null, msg: "" };
+  if (location.hash !== "#ichiran") location.hash = "#ichiran"; else render();
+  setTimeout(() => { const n = document.getElementById("row-" + iid); if (n) n.scrollIntoView({ block: "start", behavior: "smooth" }); }, 50);
+}
+function closeEdit() { state.edit = null; render(); }
+function buildEditForm(coll, item, pairCount) {
+  const form = el("form", { class: "edit", novalidate: true });
+  for (const [key, label, kind, opts] of FIELDS[coll]) {
+    const fid = "e-" + key;
+    const v = item[key];
+    let input;
+    if (kind === "text") input = el("input", { type: "text", id: fid, name: key, value: v || "" });
+    else if (kind === "area") input = el("textarea", { id: fid, name: key }, v || "");
+    else if (kind === "select") {
+      input = el("select", { id: fid, name: key }, el("option", { value: "", text: "選択してください" }),
+        opts.map(o => el("option", { text: o, selected: o === v })));
+      if (v && !opts.includes(v)) input.append(el("option", { text: v, selected: true }));
+    } else {
+      const have = Array.isArray(v) ? v : [];
+      input = el("div", { class: "checks", role: "group", "aria-label": label },
+        opts.map((o, i) => el("label", {}, el("input", { type: "checkbox", name: key, value: o, id: fid + "-" + i, checked: have.includes(o) }), o)));
+    }
+    form.append(el("div", { class: "field" }, kind === "checks" ? el("span", { class: "lbl", text: label }) : el("label", { for: fid, text: label }), input));
+  }
+  const msg = el("p", { class: "msg", role: "status", hidden: true });
+  const del = el("button", { class: "btn ghost danger", type: "button" }, "この登録を削除");
+  del.addEventListener("click", () => {
+    if (!del.dataset.armed) {
+      del.dataset.armed = "1";
+      del.textContent = pairCount ? `もう一度押すと削除（伴走ペア${pairCount}組も解除）` : "もう一度押すと削除します";
+      setTimeout(() => { if (del.isConnected) { delete del.dataset.armed; del.textContent = "この登録を削除"; } }, 5000);
+      return;
+    }
+    removeItem(coll, item.id);
+  });
+  form.append(el("div", { class: "actions" }, el("button", { class: "btn", type: "submit" }, "保存する"),
+    el("button", { class: "btn ghost", type: "button", onclick: closeEdit }, "閉じる"), el("span", { class: "spacer" }), del), msg);
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const patch = {};
+    for (const [key, , kind] of FIELDS[coll]) {
+      patch[key] = kind === "checks" ? [...form.querySelectorAll(`input[name="${key}"]:checked`)].map(i => i.value) : (form.elements[key].value || "").trim();
+    }
+    if (!patch.name) { msg.hidden = false; msg.className = "msg err"; msg.textContent = "名前は空にできません。"; return; }
+    const btn = form.querySelector("button[type=submit]"); btn.disabled = true;
+    try {
+      if (state.demo) Object.assign(DEMO[coll].find(x => x.id === item.id) || {}, patch);
+      else await state.backend.updateItem(coll, item.id, patch);
+      state.edit = null; state.flash = { id: item.id, text: "保存しました" }; render();
+      setTimeout(() => { if (state.flash && state.flash.id === item.id) { state.flash = null; render(); } }, 3000);
+    } catch (err) {
+      console.warn(err); btn.disabled = false;
+      msg.hidden = false; msg.className = "msg err"; msg.textContent = "保存できませんでした。通信状態を確認して、もう一度お試しください。";
+    }
+  });
+  return form;
+}
+async function removeItem(coll, iid) {
+  const key = coll === "companies" ? "companyId" : "facilityId";
+  try {
+    if (state.demo) {
+      DEMO[coll] = DEMO[coll].filter(x => x.id !== iid);
+      DEMO.pairs = DEMO.pairs.filter(p => p[key] !== iid);
+    } else {
+      for (const p of state.live.pairs.filter(p => p[key] === iid)) await state.backend.deletePair(p.id);
+      await state.backend.deleteItem(coll, iid);
+    }
+    state.edit = null; render();
+  } catch (e) { console.warn("削除できませんでした", e); }
+}
+function renderIchiran(d, can) {
+  const box = $("#i-list");
+  $("#i-tabs").replaceChildren(...[["companies", "企業", d.companies.length], ["facilities", "事業所", d.facilities.length]].map(([k, label, n]) =>
+    el("button", { type: "button", class: "seg" + (state.tab === k ? " on" : ""), "aria-pressed": state.tab === k ? "true" : "false",
+      onclick: () => { state.tab = k; state.edit = null; render(); } }, `${label}（${n}）`)));
+  if (gate(box)) return;
+  const q = state.query.trim().toLowerCase();
+  const items = [...d[state.tab]].sort((a, b) => ms(b.createdAt) - ms(a.createdAt))
+    .filter(x => !q || [x.name, x.person, x.email, x.area, x.type].some(v => (v || "").toLowerCase().includes(q)));
+  if (!items.length) {
+    box.replaceChildren(el("div", { class: "empty" }, el("b", { text: q ? "見つかりませんでした" : "まだ登録がありません" }),
+      q ? "名前・担当者・メール・区で探せます。" : (state.tab === "companies" ? "企業フォームから届くと、ここに並びます。" : "事業所フォームから届くと、ここに並びます。")));
+    return;
+  }
+  const pairKey = state.tab === "companies" ? "companyId" : "facilityId";
+  box.replaceChildren(...items.map(x => {
+    const editing = state.edit && state.edit.coll === state.tab && state.edit.id === x.id;
+    const pairCount = d.pairs.filter(p => p[pairKey] === x.id).length;
+    if (editing && !state.edit.formEl) state.edit.formEl = buildEditForm(state.tab, x, pairCount);
+    const flash = state.flash && state.flash.id === x.id ? el("span", { class: "pill ok", text: state.flash.text }) : null;
+    return el("article", { class: "row" + (editing ? " open" : ""), id: "row-" + x.id },
+      el("div", { class: "row-main" },
+        el("div", { class: "row-text" },
+          el("b", { text: x.name || "（名前なし）" }),
+          el("span", { class: "meta", text: [x.type, x.area, x.person, fmtDate(x.createdAt), pairCount ? "伴走ペア" + pairCount + "組" : ""].filter(Boolean).join("・") })),
+        flash,
+        editing ? null : el("button", { class: "btn small ghost", type: "button", onclick: () => openEdit(state.tab, x.id) }, "編集")),
+      editing ? state.edit.formEl : null);
+  }));
 }
 
 function confirmRemove(btn, p) {
@@ -308,7 +436,8 @@ bindForm("#f-jigyosho", "#j-msg", "facilities", f => ({
 }), [["name", "事業所名"], ["type", "事業所の種別"], ["person", "ご担当者名"], ["email", "メールアドレス"], ["area", "所在地"], ["work", "対応できる作業"]],
 "登録しました。委員会の担当者から、ご入力のメールアドレスへご連絡します。");
 
-document.querySelectorAll(".demo-toggle").forEach(t => t.addEventListener("change", e => { state.demo = e.target.checked; render(); }));
+document.querySelectorAll(".demo-toggle").forEach(t => t.addEventListener("change", e => { state.demo = e.target.checked; state.edit = null; render(); }));
+$("#i-search").addEventListener("input", e => { state.query = e.target.value; state.edit = null; render(); });
 
 // ---------------------------------------------------------------- install (PWA)
 let deferred = null;
